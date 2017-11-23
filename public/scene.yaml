@@ -1,0 +1,76 @@
+import:
+    [https://mapzen.com/carto/refill-style/9/refill-style.zip,
+     https://mapzen.com/carto/refill-style/9/themes/label-2.zip,
+    https://mapzen.com/carto/refill-style/9/themes/color-zinc.zip]
+sources:
+    earthquake:
+        type: GeoJSON
+        url: ./earthquake-data.json
+
+scene:
+    animated: true
+
+styles:
+    fancypoints:
+        base: points
+        visible: false
+        shaders:
+            blocks:
+                global: |
+                    vec4 getColor(float f) {
+                        if (f <= 0.2) return vec4(254.,217.,118., 1.7);
+                        else if (f <= 0.3) return vec4(254.,178.,76., 1.8);
+                        else if (f <= 0.4) return vec4(253.,141.,60., 1.9);
+                        else if (f <= 0.5) return vec4(252.,78.,42., 1.9);
+                        else return vec4(227.,26.,28., 1.9);
+                        // else return vec4(177.,0.,38., 1.5);
+                    }
+                    float circle(vec2 st, float radius, float currentZoom) {
+                        vec2 dist = st;
+                        float val = smoothstep(radius-(radius*0.01), radius+(radius*0.01), dot(dist,dist)*4.*(sin(u_time*2.)*.5+1.));
+                        float val2 = smoothstep(radius-(radius*0.01), radius+(radius*0.01), dot(dist,dist)*4.*(sin(2.)*.5+1.));
+                        // animation becomes annoying when you want to see the detail of the info
+                        // just return static value when zoom level is high
+                        if (u_map_position.z < 12.0) return 1.-val;
+                        else return 1.- val2;
+                    }
+
+                color: |
+                    vec2 st = v_texcoord.xy;
+                    float deludeAlpha = 1.2;
+                    if (u_map_position.z < 12.0) deludeAlpha = 1.7;
+
+                    color = vec4(circle(st, 1., v_color.g));
+                    vec4 colorToBe = getColor(v_color.r);
+                    color.r = colorToBe.r/255.;
+                    color.g = colorToBe.g/255.;
+                    color.b = colorToBe.b/255.;
+                    color.a = color.a /deludeAlpha;
+
+layers:
+    earthquake:
+        data: { source: earthquake }
+        draw:
+            fancypoints:
+                interactive: true
+                collide: false
+                order: |
+                    function () {
+                        var year = Number(feature['발생시각'][0] + feature['발생시각'][1] + feature['발생시각'][2] + feature['발생시각'][3]);
+                        return year;
+                    }
+                size: |
+                    function () {
+                        var date = Number(feature['발생시각'][0] + feature['발생시각'][1] + feature['발생시각'][2] + feature['발생시각'][3]);
+                        var scale =Number(feature['규모']);
+                        var testVar = 0;
+                        if (date >=  global.minDateRange && date <= global.maxDateRange
+                        && scale >=  global.minScale && scale <= global.maxScale) testVar = Number(feature['규모'])*10;
+                        return ($zoom/9) * testVar;
+                    }
+                color: |
+                    function () {
+                        var scale = Number(feature['규모'])/10;
+                        // Shovel up the info that needs to be passed to shader part
+                        return [scale, 0.0, 0.0];
+                    }
