@@ -13,7 +13,6 @@ scene:
 styles:
     fancypoints:
         base: points
-        visible: false
         shaders:
             blocks:
                 global: |
@@ -50,6 +49,7 @@ styles:
 layers:
     earthquake:
         data: { source: earthquake }
+        filter: global.hideFilter
         draw:
             fancypoints:
                 interactive: true
@@ -61,12 +61,8 @@ layers:
                     }
                 size: |
                     function () {
-                        var date = Number(feature['발생시각'][0] + feature['발생시각'][1] + feature['발생시각'][2] + feature['발생시각'][3]);
-                        var scale =Number(feature['규모']);
-                        var testVar = 0;
-                        if (date >=  global.minDateRange && date <= global.maxDateRange
-                        && scale >=  global.minScale && scale <= global.maxScale) testVar = Number(feature['규모'])*10;
-                        return ($zoom/9) * testVar;
+                        var scale = Number(feature['규모']);
+                        return ($zoom/0.9) * scale;
                     }
                 color: |
                     function () {

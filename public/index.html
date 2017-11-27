@@ -97,7 +97,20 @@
       tangramOptions: {
         scene: {
           import: './scene.yaml',
-          global: { minDateRange: dateSliderMin, maxDateRange: dateSliderMax, minScale: 2.0, maxScale: 6.0 }
+          global: {
+            minDateRange: dateSliderMin,
+            maxDateRange: dateSliderMax,
+            minScale: 2.0,
+            maxScale: 6.0,
+            scaleKeyName: '규모',
+            dateKeyName: '발생시각',
+            hideFilter: function () {
+              var date = Number(feature[global.dateKeyName][0] + feature[global.dateKeyName][1] + feature[global.dateKeyName][2] + feature[global.dateKeyName][3]);
+              var scale = Number(feature[global.scaleKeyName]);
+              if (date >=  global.minDateRange && date <= global.maxDateRange && scale >=  global.minScale && scale <= global.maxScale) return true;
+              else return false;
+            }
+          }
         }
       }
     });
