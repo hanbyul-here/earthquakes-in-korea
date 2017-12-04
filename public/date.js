@@ -14,6 +14,7 @@
   var getEndDate = function () {
     const now = new Date();
     const cYear = now.getFullYear();
+    const day = now.getDate();
     let cMonth = now.getMonth() +1;
     let cDay = now.getDate() ;
     if (cMonth < 10) cMonth = '0' + cMonth;
